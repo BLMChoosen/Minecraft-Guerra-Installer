@@ -26,9 +26,31 @@ class ModpackWizard(tk.Tk):
             # CONFIGURAÇÃO DE LINKS (Coloque seus links aqui)
             # ==========================================
         self.DOWNLOAD_URLS = {
-            "full": "https://api.bloodmoonbr.com/downloads/Full-Curseforge.zip",
-            "intermediate": "https://example.com/modpack_intermediate.zip",
-            "lightweight": "https://example.com/modpack_light.zip"
+            "tlauncher": {
+                "full": "LINK_TLAUNCHER_FULL",
+                "intermediate": "LINK_TLAUNCHER_INTERMEDIATE",
+                "lightweight": "LINK_TLAUNCHER_LIGHT"
+            },
+            "sklauncher": {
+                "full": "LINK_SKLAUNCHER_FULL",
+                "intermediate": "LINK_SKLAUNCHER_INTERMEDIATE",
+                "lightweight": "LINK_SKLAUNCHER_LIGHT"
+            },
+            "modrinth": {
+                "full": "LINK_MODRINTH_FULL",
+                "intermediate": "LINK_MODRINTH_INTERMEDIATE",
+                "lightweight": "LINK_MODRINTH_LIGHT"
+            },
+            "curseforge": {
+                "full": "LINK_CURSEFORGE_FULL",
+                "intermediate": "LINK_CURSEFORGE_INTERMEDIATE",
+                "lightweight": "LINK_CURSEFORGE_LIGHT"
+            },
+            "manual": {
+                "full": "LINK_MANUAL_FULL",
+                "intermediate": "LINK_MANUAL_INTERMEDIATE",
+                "lightweight": "LINK_MANUAL_LIGHT"
+            }
         }
 
         # Variáveis de Controle
@@ -151,7 +173,7 @@ class ModpackWizard(tk.Tk):
         if license_type == "pirata":
             options = [("TLauncher", "tlauncher"), ("SKLauncher", "sklauncher"), ("Manual", "manual_pirata")]
         else:
-            options = [("Modrinth App", "modrinth"), ("CurseForge", "curseforge"), ("Launcher Oficial", "official"), ("Manual", "manual_original")]
+            options = [("Modrinth App", "modrinth"), ("CurseForge", "curseforge"), ("Manual", "manual_original")]
 
         for text, value in options:
             ttk.Radiobutton(self.content_frame, text=text, variable=self.var_launcher, value=value, command=self.toggle_manual_path).pack(anchor='w', pady=5, padx=50)
@@ -217,7 +239,21 @@ class ModpackWizard(tk.Tk):
         try:
             # 1. Obter URL e Caminho
             version = self.var_version.get()
-            url = self.DOWNLOAD_URLS.get(version, self.DOWNLOAD_URLS["full"]) # Fallback para full
+            launcher = self.var_launcher.get()
+
+            # Normaliza a chave do launcher para buscar no dicionário
+            launcher_key = launcher
+            if "manual" in launcher:
+                launcher_key = "manual"
+
+            # Busca a URL correta
+            if launcher_key in self.DOWNLOAD_URLS and version in self.DOWNLOAD_URLS[launcher_key]:
+                url = self.DOWNLOAD_URLS[launcher_key][version]
+            else:
+                self.after(0, lambda: messagebox.showerror("Erro", f"Link não configurado para {launcher} - {version}"))
+                self.finish_installation_ui(success=False)
+                return
+
             target_dir = self.get_target_directory()
             
             # Nota: Para teste, se o link não for real, vai dar erro.
