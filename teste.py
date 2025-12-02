@@ -6,6 +6,7 @@ import os
 import zipfile
 import tempfile
 import shutil
+import json
 
 # Tente importar requests, se não tiver, avisa o usuário
 try:
@@ -219,9 +220,12 @@ class ModpackWizard(tk.Tk):
         minecraft_default = os.path.join(appdata, ".minecraft")
 
         # Lógica de destino baseada no launcher (Exemplos)
-        if launcher in ["tlauncher", "sklauncher", "official"]:
+        if launcher == "tlauncher":
             # Geralmente instalam na .minecraft ou criam versões lá dentro
             return minecraft_default
+        
+        elif launcher == "sklauncher":
+             return os.path.join(minecraft_default, "instances", "Minecraft_Guerra_2")
         
         elif launcher == "curseforge":
             # Curseforge: C:\Users\{USER}\curseforge\minecraft\Instances\Minecraft Guerra
@@ -234,6 +238,54 @@ class ModpackWizard(tk.Tk):
              return os.path.join(appdata, "com.modrinth.theseus", "profiles", "MeuModpack")
 
         return minecraft_default # Fallback
+
+    def configure_sklauncher_profile(self):
+        try:
+            appdata = os.getenv('APPDATA')
+            minecraft_dir = os.path.join(appdata, ".minecraft")
+            profiles_path = os.path.join(minecraft_dir, "launcher_profiles.json")
+            
+            if not os.path.exists(profiles_path):
+                print("launcher_profiles.json não encontrado.")
+                return
+
+            with open(profiles_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Garante que a chave profiles existe
+            if "profiles" not in data:
+                data["profiles"] = {}
+
+            # Caminho dinâmico para o gameDir
+            game_dir = os.path.join(minecraft_dir, "instances", "Minecraft_Guerra_2")
+            
+            # ID do perfil (usando o fornecido ou fixo para este modpack)
+            profile_id = "686d1a5248c548dca11bfc1d256b1784"
+            
+            # Dados do perfil
+            new_profile = {
+                "name": "Minecraft Guerra 2",
+                "gameDir": game_dir,
+                "lastVersionId": "1.20.1-forge-47.4.6",
+                "resolution": {
+                    "width": 854,
+                    "height": 480,
+                    "fullscreen": False
+                },
+                "type": "custom",
+                "created": "2025-12-02T17:47:08-03:00",
+                "lastUsed": "2025-12-02T17:47:24-03:00"
+            }
+
+            data["profiles"][profile_id] = new_profile
+
+            with open(profiles_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+                
+            print("Perfil do SKLauncher configurado com sucesso.")
+
+        except Exception as e:
+            print(f"Erro ao configurar perfil do SKLauncher: {e}")
 
     def run_installation_logic(self):
         try:
@@ -254,10 +306,15 @@ class ModpackWizard(tk.Tk):
                 self.finish_installation_ui(success=False)
                 return
 
-            target_dir = self.get_target_directory()
-            
-            # Nota: Para teste, se o link não for real, vai dar erro.
-            # Vou usar um link dummy ou verificar se é exemplo
+                        percent = (index / total_files) * 100
+                        self.after(0, lambda p=percent, f=file: self.update_status(f"Extraindo: {f}", p))
+
+                # Pós-instalação específica
+                if launcher == "sklauncher":
+                    self.update_status("Configurando perfil do SKLauncher...", 100)
+                    self.configure_sklauncher_profile()
+
+            self.finish_installation_ui(success=True)é exemplo
             if "example.com" in url:
                 self.update_status("Modo de Simulação (Links não configurados)", 0)
                 time.sleep(2)
