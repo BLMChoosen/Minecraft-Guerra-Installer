@@ -5,7 +5,6 @@ Instalador moderno e intuitivo para o Modpack Minecraft Guerra 2 com interface g
 ## ✨ Características
 
 - 🎨 **Interface Moderna** - Design limpo e profissional usando CustomTkinter
-- 🌓 **Tema Dark/Light** - Interface adaptável com cores suaves
 - 📊 **Barra de Progresso Visual** - Indicadores de passo com animações
 - 🚀 **Instalação Automática** - Configure perfis automaticamente em múltiplos launchers
 - 📦 **Múltiplas Versões** - Escolha entre Full, Intermediate ou Lightweight
@@ -61,12 +60,6 @@ A interface utiliza CustomTkinter para proporcionar:
 - Feedback visual em tempo real
 - Design responsivo e moderno
 
-## 📝 Versões do Modpack
-
-- **💪 Full (Pesado)** - ~500MB - Todos os mods e recursos
-- **⚖️ Intermediate (Médio)** - ~300MB - Balanceado para maioria dos PCs
-- **🪶 Lightweight (Leve)** - ~150MB - Otimizado para PCs mais fracos
-
 ## 🔄 Funcionalidades Técnicas
 
 - Instalação isolada por versão (permite instalar múltiplas versões no mesmo launcher)
@@ -82,19 +75,8 @@ Desenvolvido por **BLMChoosen** em 2025
 
 ## 📄 Licença
 
-Este projeto é de código aberto e está disponível para uso pessoal.
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para:
-- Reportar bugs
-- Sugerir melhorias
-- Enviar pull requests
-
-## 📞 Suporte
-
-Para suporte ou dúvidas, abra uma issue no repositório.
+Este projeto é de código aberto e está disponível para uso pessoal e comercial.
 
 ---
 
-**Feito com ❤️ para a comunidade Minecraft**
+**Feito com ❤️ para o Minecraft Guerra 2**
