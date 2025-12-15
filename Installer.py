@@ -32,6 +32,8 @@ import tempfile
 import json
 import datetime
 import sqlite3
+import shutil
+import glob
 
 # Verifica e importa bibliotecas necessárias
 try:
@@ -851,7 +853,7 @@ class ModpackWizard(ctk.CTk):
             new_profile = {
                 "name": self.get_profile_name(),  # Nome incluindo versão
                 "gameDir": game_dir_installed,  # Caminho dinâmico
-                "lastVersionId": "1.20.1-forge-47.4.6",  # Versão do Minecraft + Forge
+                "lastVersionId": "1.20.1-forge-47.4.13",  # Versão do Minecraft + Forge
                 "resolution": {
                     "width": 854,
                     "height": 480,
@@ -932,7 +934,7 @@ class ModpackWizard(ctk.CTk):
                     None,                  # icon_path
                     "1.20.1",             # game_version
                     "forge",              # mod_loader
-                    "47.4.6",             # mod_loader_version
+                    "47.4.13",             # mod_loader_version
                     "11",                 # groups
                     None,                 # linked_project_id
                     None,                 # linked_version_id
@@ -1063,21 +1065,99 @@ class ModpackWizard(ctk.CTk):
                             self.after(0, lambda p=percent: self.update_status(f"Baixando... {int(p)}%", p))
 
                 # --- Extração ---
-                self.update_status("Extraindo arquivos...", 100)
-                if not os.path.exists(target_dir):
-                    os.makedirs(target_dir)
+                self.update_status("Verificando instalação...", 100)
+                
+                # Verifica se é atualização (pasta existe e tem conteúdo)
+                is_update = os.path.exists(target_dir) and os.listdir(target_dir)
+                
+                if is_update:
+                    self.update_status("Atualizando modpack...", 100)
+                    # Extrai para pasta temporária
+                    extract_dir = os.path.join(temp_dir, "extracted")
+                    os.makedirs(extract_dir, exist_ok=True)
+                    
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_dir)
+                    
+                    # 1. Substituir pasta mods
+                    target_mods = os.path.join(target_dir, "mods")
+                    source_mods = os.path.join(extract_dir, "mods")
+                    if os.path.exists(source_mods):
+                        if os.path.exists(target_mods):
+                            shutil.rmtree(target_mods)
+                        shutil.copytree(source_mods, target_mods)
+                        self.update_status("Atualizando mods...", 100)
+                    
+                    # 2. Substituir pasta config
+                    target_config = os.path.join(target_dir, "config")
+                    source_config = os.path.join(extract_dir, "config")
+                    if os.path.exists(source_config):
+                        if os.path.exists(target_config):
+                            shutil.rmtree(target_config)
+                        shutil.copytree(source_config, target_config)
+                        self.update_status("Atualizando configs...", 100)
+                    
+                    # 2.1. Substituir pasta resourcepacks
+                    target_resourcepacks = os.path.join(target_dir, "resourcepacks")
+                    source_resourcepacks = os.path.join(extract_dir, "resourcepacks")
+                    if os.path.exists(source_resourcepacks):
+                        if os.path.exists(target_resourcepacks):
+                            shutil.rmtree(target_resourcepacks)
+                        shutil.copytree(source_resourcepacks, target_resourcepacks)
+                        self.update_status("Atualizando resourcepacks...", 100)
 
-                # Extrai todos os arquivos do ZIP
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    file_list = zip_ref.namelist()
-                    total_files = len(file_list)
-                    for index, file in enumerate(file_list):
-                        zip_ref.extract(file, target_dir)
-                        # Atualiza status a cada 50 arquivos para não travar a UI
-                        if index % 50 == 0:
-                            percent = (index / total_files) * 100
-                            filename = file.split('/')[-1] if '/' in file else file
-                            self.after(0, lambda p=percent, f=filename: self.update_status(f"Extraindo: {f}", p))
+                    # 2.2. Substituir pasta shaderpacks
+                    target_shaderpacks = os.path.join(target_dir, "shaderpacks")
+                    source_shaderpacks = os.path.join(extract_dir, "shaderpacks")
+                    if os.path.exists(source_shaderpacks):
+                        if os.path.exists(target_shaderpacks):
+                            shutil.rmtree(target_shaderpacks)
+                        shutil.copytree(source_shaderpacks, target_shaderpacks)
+                        self.update_status("Atualizando shaderpacks...", 100)
+
+                    # 3. Substituir arquivos específicos
+                    files_to_copy = [
+                        "TLauncherAdditional.json",
+                        "minecraftinstance.json"
+                    ]
+                    
+                    # Adiciona variantes do json principal
+                    json_variants = glob.glob(os.path.join(extract_dir, "Minecraft Guerra 2 *.json"))
+                    for f in json_variants:
+                        files_to_copy.append(os.path.basename(f))
+                        
+                    # Adiciona arquivos SQL (Modrinth)
+                    sql_files = glob.glob(os.path.join(extract_dir, "*.sql"))
+                    for f in sql_files:
+                        files_to_copy.append(os.path.basename(f))
+
+                    for filename in files_to_copy:
+                        src_file = os.path.join(extract_dir, filename)
+                        dst_file = os.path.join(target_dir, filename)
+                        if os.path.exists(src_file):
+                            if os.path.exists(dst_file):
+                                os.remove(dst_file)
+                            shutil.copy2(src_file, dst_file)
+                            
+                    self.update_status("Atualização concluída!", 100)
+
+                else:
+                    # Instalação Limpa
+                    self.update_status("Extraindo arquivos...", 100)
+                    if not os.path.exists(target_dir):
+                        os.makedirs(target_dir)
+
+                    # Extrai todos os arquivos do ZIP
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        file_list = zip_ref.namelist()
+                        total_files = len(file_list)
+                        for index, file in enumerate(file_list):
+                            zip_ref.extract(file, target_dir)
+                            # Atualiza status a cada 50 arquivos para não travar a UI
+                            if index % 50 == 0:
+                                percent = (index / total_files) * 100
+                                filename = file.split('/')[-1] if '/' in file else file
+                                self.after(0, lambda p=percent, f=filename: self.update_status(f"Extraindo: {f}", p))
 
             # ==========================================
             # PASSO 4: CONFIGURAÇÃO PÓS-INSTALAÇÃO

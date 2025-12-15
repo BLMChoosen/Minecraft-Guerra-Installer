@@ -5,7 +5,8 @@ Instalador moderno e intuitivo para o Modpack Minecraft Guerra 2 com interface g
 ## ✨ Características
 
 - 🎨 **Interface Moderna** - Design limpo e profissional usando CustomTkinter
-- 📊 **Barra de Progresso Visual** - Indicadores de passo com animações
+- � **Atualização Inteligente** - Atualiza mods e configs mantendo seus saves, screenshots e opções
+- �📊 **Barra de Progresso Visual** - Indicadores de passo com animações
 - 🚀 **Instalação Automática** - Configure perfis automaticamente em múltiplos launchers
 - 📦 **Múltiplas Versões** - Escolha entre Full, Intermediate ou Lightweight
 - 🎯 **Launchers Suportados**:
@@ -68,6 +69,21 @@ A interface utiliza CustomTkinter para proporcionar:
 - Fechamento automático de processos conflitantes
 - Download com barra de progresso em tempo real
 - Extração com feedback visual
+- Preservação de dados do usuário (saves, screenshots, options.txt) durante atualizações
+
+## 🔨 Compilando para .exe
+
+Para gerar um executável standalone:
+
+1. Instale o PyInstaller:
+```bash
+pip install pyinstaller
+```
+
+2. Execute o comando de build (ajuste o caminho do customtkinter se necessário):
+```bash
+python -m PyInstaller --noconsole --onefile --clean --add-data "CAMINHO_DO_PYTHON\Lib\site-packages\customtkinter;customtkinter" Installer.py
+```
 
 ## 🛠️ Desenvolvimento
 
