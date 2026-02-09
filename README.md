@@ -158,7 +158,7 @@ This project deepened my understanding of:
 - Rollback functionality for failed installations
 - Telemetry to track which versions and launchers are most popular
 - Custom theme/color scheme support
-- Localization for languages beyond Portuguese
+- Multi-language localization support (Portuguese, Spanish, etc.)
 
 ---
 
